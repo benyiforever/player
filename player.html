@@ -1,0 +1,154 @@
+<!DOCTYPE html>
+<html>
+<head>
+	<meta charset='utf-8'>
+	<title></title>
+	<style type="text/css">
+	*{margin:0;padding:0;}
+	#box{width:100%;height:100%;position:relative;}
+	.btn-group{width:100%;position:absolute;left:0;bottom:0px;margin-left: 500px}
+	.line{width:200px;height:5px;background: #ddd;position:relative;top:7px;}
+	.ball{width: 10px;height:10px;border-radius: 10px;background: blue;position: absolute;top:-2px;}
+	button{border: none;background: transparent;outline: none}
+	</style>
+	<link rel="stylesheet" type="text/css" href="font_yelymenepbsxlxr/iconfont.css">
+</head>
+<body>
+<center>
+	<div id="box">
+	<video src="3.mp4" width="600" height="400"></video>
+		<div class="btn-group">
+			<button style="float: left;margin:10px"><i class="iconfont icon-bofang"></i></button>
+			<button style="float: left;margin:10px">00:00</button>
+			<div class="line" style="float: left;margin:10px">
+				<div class="ball"></div>
+			</div>
+			<button style="float: left;margin:10px">00:00</button>
+			<button style="float: left;margin:10px">静音</button>
+			<button style="float: left;margin:10px"><i class="iconfont icon-quanping"></i></button>
+		</div>
+	</div></center>
+	<script type="text/javascript">
+		window.onload=function(){
+			var video=document.querySelector('video');
+			var btn=document.querySelectorAll('button');
+			var box=document.querySelector('#box');
+			var line=document.querySelector('.line');
+			var ball=document.querySelector('.ball');
+			var bgroup=document.querySelector('.btn-group');
+			//获取视频的原始宽高
+			var width=video.width;
+			var height=video.height;
+			//播放暂停
+			btn[0].onclick=function(){
+				if(video.paused){
+					video.play();
+					this.innerHTML='<i class="iconfont icon-zanting"></i>';
+				}else{
+					video.pause();
+					this.innerHTML='<i class="iconfont icon-bofang"></i>'
+				}
+			}
+			//当前播放时间
+			video.ontimeupdate=function(){
+				btn[1].innerHTML=formatTime(video.currentTime);
+				var bili=video.currentTime/video.duration;
+				ball.style.left=line.offsetWidth*bili+'px';
+			}
+			btn[2].innerHTML=formatTime(video.duration);
+			btn[3].onclick=function(){
+				if(video.muted){
+					video.muted=false;
+					this.innerHTML='静音';
+				}else{
+					video.muted=true;
+					this.innerHTML='取消静音';
+				}
+			}
+			btn[4].onclick=function(){
+				if(!fullscreen()){
+					requestFullscreen(box);
+				}else{
+					exitFullscreen();
+				}
+			}
+			line.onclick=function(ent){
+				var e=ent||window.event;
+				var left=e.pageX-box.offsetLeft-bgroup.offsetLeft-line.offsetLeft-ball.offsetWidth/2;
+
+				ball.style.left=left+'px';
+				var bili=ball.offsetLeft/line.offsetWidth;
+				video.currentTime=video.duration*bili;
+			}
+			ball.onmousedown=function(ent){
+				var e=ent||window.event;
+				var startX=e.pageX;
+				var startLeft=ball.offsetLeft;
+				document.onmousemove=function(ment){
+					var me=ment||window.event;
+					var moveX=me.pageX;
+					var x=moveX-startX;
+					ball.style.left=startLeft+x+'px';
+					var bili=ball.offsetLeft/line.offsetWidth;
+					video.currentTime=video.duration*bili;
+				}
+				document.onmouseup=function(){
+					document.onmousemove=null;
+				}
+			}
+			document.onwebkitfullscreenchange=function(){
+				if(fullscreen()){
+					btn[4].innerHTML='<i class="iconfont icon-quxiaoquanping">';
+					video.width=screen.width;
+					video.height=screen.height;
+					line.style.width=500+'px';
+					bgroup.style.marginLeft=350+'px'
+				}else{
+					btn[4].innerHTML='<i class="iconfont icon-quanping">';
+					video.width=width;
+					video.height=height;
+					line.style.width=200+'px';
+					bgroup.style.marginLeft=500+'px'
+				}
+			}
+		}
+		function formatTime(time){
+			var total=Math.floor(time);
+			var minute=Math.floor(total/60);
+			if(minute<10){
+				minute='0'+minute;
+			}
+			var second=total%60;
+			if(second<10){
+				second='0'+second;
+			}
+			return minute+':'+second;
+		}
+		function requestFullscreen(ele){
+			if(ele.requestFullscreen){
+				ele.requestFullscreen();
+			}else if(ele.webkitRequestFullscreen){
+				ele.webkitRequestFullscreen();
+			}else if(ele.mozRequestFullScreen){
+				ele.mozRequestFullScreen()
+			}else if(ele.msRequestFullscreen){
+				ele.msRequestFullscreen();
+			}
+		}
+		function exitFullscreen(){
+			if(document.exitFullscreen){
+				document.exitFullscreen();
+			}else if(document.webkitExitFullscreen){
+				document.webkitExitFullscreen()
+			}else if(document.msExitFullscreen){
+				msExitFullscreen()
+			}else if(document.mozCancelFullscreen){
+				mozCancelFullscreen();
+			}
+		}
+		function fullscreen(){
+			return document.fullscreen||document.webkitIsFullScreen||document.mozFullScreen||false;
+		}
+	</script>
+</body>
+</html>
